@@ -1,0 +1,449 @@
+'~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+' Name:          AUF CREATION MODULE
+'
+' Description:   This module creates an Excel Spreadsheet which is used to collect upates from project team
+'                members. Runs in MS Project. Basically gives a list of activities that should have started 
+'                and ask the project team members to report if they have started or finished a task.  This is 
+'                then fed back into MS Project.  The advatange is that makes it easy to use by extracting the 
+'                info and putting it in an excel file
+'
+'~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
+Option Explicit
+Dim xlRow As Object 'Excel.Range
+Dim xlCol As Object 'Excel.Range
+Dim latestBaseline As Long
+
+
+Sub CreateAUF()
+Dim xlApp As Object 'Excel.Application
+Dim xlBook As Object 'Excel.Workbook
+Dim xlSheet As Object 'Excel.Worksheet
+Dim t As Task
+Dim r As Resource
+Dim Tcount As Integer
+Dim element As Integer
+
+
+'Open new instance and set focus on Excel
+Set xlApp = CreateObject("Excel.Application")
+xlApp.Visible = True
+AppActivate "Excel"
+
+'Create a new workbook and a new tab called "AUF"
+Set xlBook = xlApp.Workbooks.Add
+Set xlSheet = xlBook.Worksheets.Add
+xlSheet.Name = "AUF"
+
+'Change the setting to make summary rows appear on top
+xlSheet.Outline.SummaryRow = 0 ' <-- xlSummaryAbove = 0
+
+'Set Range to write to first cell
+Set xlRow = xlSheet.Cells(1, 1)
+dwn 5
+
+'Print column Headdings
+Set xlCol = xlRow.Offset(0, 0)
+xlCol = "ID"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Activity Description"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Duration"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Start"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Actual Start"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Actual Finish"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Estimated Finish"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Finish"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+rgt 1
+xlCol = "Total Hours of Effort"
+xlCol.Interior.Color = RGB(191, 191, 191)
+xlCol.WrapText = 1
+xlCol.Font.Bold = 1
+
+'Cycle through the resources in the project
+For Each r In ActiveProject.Resources
+    If Not r Is Nothing Then
+        dwn 1
+        Set xlCol = xlRow.Offset(0, 0)
+        rgt 1
+        xlCol = r.Name
+        xlCol.Font.Bold = True
+    End If
+    
+    'Count the number of tasks associated with this resource
+    For Each t In ActiveProject.Tasks
+        If Not t Is Nothing Then
+            If t.Text1 Like "*" & r.Name & "*" Then
+                Tcount = Tcount + 1
+            End If
+        End If
+    Next t
+    
+    'Create the Array that will hold the task infomration
+    ' tasks will be stored in the array so that they may be sorted
+    ' before printing them on the spreadsheet
+    Dim rTasks() As String
+    ReDim rTasks(0 To Tcount, 1 To 10)
+       
+    Dim i As Integer
+    i = 1
+    
+    'Go through all tasks in the project, pull out the tasks assigned
+    ' to this resource and store them in the array
+    ' ResourceNames
+    For Each t In ActiveProject.Tasks
+        If Not t Is Nothing Then
+            If t.Text1 Like "*" & r.Name & "*" Then
+    
+                Dim actualStartDate As Variant
+                Dim actualFinishDate As Variant
+                Dim startDate As Variant
+                Dim finishDate As Variant
+'                Dim latestBaselineStartDate As Variant
+'                Dim latestBaselineFinishDate As Variant
+                Dim sortableDate As String
+
+'                CountBaselines
+                
+'                Select Case latestBaseline
+                
+'                Case 0
+'                    latestBaselineStartDate = t.BaselineStart
+'                    latestBaselineFinishDate = t.BaselineFinish
+'                Case 1
+'                    latestBaselineStartDate = t.Baseline1Start
+'                    latestBaselineFinishDate = t.Baseline1Finish
+'                Case 2
+'                    latestBaselineStartDate = t.Baseline2Start
+'                    latestBaselineFinishDate = t.Baseline2Finish
+'                Case 3
+'                    latestBaselineStartDate = t.Baseline3Start
+'                    latestBaselineFinishDate = t.Baseline3Finish
+'                Case 4
+'                    latestBaselineStartDate = t.Baseline4Start
+'                    latestBaselineFinishDate = t.Baseline4Finish
+'                Case 5
+'                    latestBaselineStartDate = t.Baseline5Start
+'                    latestBaselineFinishDate = t.Baseline5Finish
+'                Case 6
+'                    latestBaselineStartDate = t.Baseline6Start
+'                    latestBaselineFinishDate = t.Baseline6Finish
+'                Case 7
+'                    latestBaselineStartDate = t.Baseline7Start
+'                    latestBaselineFinishDate = t.Baseline7Finish
+'                Case 8
+'                    latestBaselineStartDate = t.Baseline8Start
+'                    latestBaselineFinishDate = t.Baseline8Finish
+'                Case 9
+'                    latestBaselineStartDate = t.Baseline9Start
+'                    latestBaselineFinishDate = t.Baseline9Finish
+'                Case 10
+'                    latestBaselineStartDate = t.Baseline10Start
+'                    latestBaselineFinishDate = t.Baseline10Finish
+'                End Select
+
+                startDate = Format(t.Start, "Short Date")
+                
+                If startDate = "NA" Then
+                    startDate = ""
+                End If
+                
+                finishDate = Format(t.Finish, "Short Date")
+                
+                If finishDate = "NA" Then
+                    finishDate = ""
+                End If
+                
+                actualStartDate = Format(t.ActualStart, "Short Date")
+                
+                If actualStartDate = "NA" Then
+                    actualStartDate = ""
+                End If
+                
+                actualFinishDate = Format(t.ActualFinish, "Short Date")
+                If actualFinishDate = "NA" Then
+                    actualFinishDate = ""
+                End If
+                
+'                sortableDate = Format(latestBaselineStartDate, "yyyymmdd")
+                sortableDate = Format(startDate, "yyyymmdd")
+                                
+                rTasks(i, 1) = t.ID
+                rTasks(i, 2) = t.Name
+                rTasks(i, 3) = Round(t.Duration / (ActiveProject.HoursPerDay * 60), 2)
+'                rTasks(i, 4) = FormatDateTime(latestBaselineStartDate, 2)
+                rTasks(i, 4) = startDate
+                rTasks(i, 5) = actualStartDate
+                rTasks(i, 6) = actualFinishDate
+                rTasks(i, 7) = ""
+'                rTasks(i, 8) = Format(latestBaselineFinishDate, "Short Date")
+                rTasks(i, 8) = finishDate
+                rTasks(i, 9) = t.ActualWork / 60
+                rTasks(i, 10) = sortableDate
+
+                i = i + 1
+                actualStartDate = 0
+                actualFinishDate = 0
+            End If
+        End If
+    Next t
+    i = 0
+
+    'Sort the array based on column 10, which is the start date
+    ' using the "bubble sort" technique
+    Dim n As Integer
+    Dim j As Integer
+    Dim y As Integer
+    Dim Condition1 As Boolean
+    Dim value As Variant
+    Dim SortColumn1 As Integer
+
+    SortColumn1 = 10 ' <-- Change this value if you want to sort on another column
+    For n = LBound(rTasks, 1) To UBound(rTasks, 1) - 1
+        For j = LBound(rTasks, 1) To UBound(rTasks, 1) - 1
+            Condition1 = rTasks(j, SortColumn1) > rTasks(j + 1, SortColumn1)
+            If Condition1 Then
+                For y = LBound(rTasks, 2) To UBound(rTasks, 2)
+                    value = rTasks(j, y)
+                    rTasks(j, y) = rTasks(j + 1, y)
+                    rTasks(j + 1, y) = value
+                Next y
+            End If
+        Next
+    Next
+    
+    'Cycle through the array and print all tasks for this Resource
+    ' in the spreadsheet
+    For element = 1 To Tcount
+        
+        dwn 1
+        Set xlCol = xlRow.Offset(0, 0)
+        
+        'Print activity ID
+        xlCol = rTasks(element, 1)
+        ' Conditional formatting to detect whcih fields the user changed
+        ' turns text red if the cell value doesn't match the original value
+        ' we put into it.
+        If Not IsNull(rTasks(element, 1)) Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 1) ' <-- xlCellValue = 1, xlNotEqual =  4,
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            'If this value in the array is empty make the conditional formatting
+            ' rule show the text as red if the user puts any value in the cell,
+            ' to accomplish this we build a conditional formatting rule with a value
+            ' we are certain no one will type into the cell.
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Name
+        xlCol = rTasks(element, 2)
+        xlCol.IndentLevel = 2   ' <-- Indent all activity names
+        If Not IsNull(rTasks(element, 2)) Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 2)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print actitivy Duration
+        xlCol = rTasks(element, 3)
+        If Not IsNull(rTasks(element, 3)) Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 3)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+    
+        'Print activity Sart Date
+        xlCol.NumberFormat = "m/d/yyyy" 'Added by Ash, set date format. Should match Control Pannel > change date time or number format > short date
+
+        xlCol = rTasks(element, 4) & "#" 'Modified by Ash - added # to convert it to string because was having formatting issues with dates. also inserted a replace at the end of script to change back to date format
+        If rTasks(element, 4) <> "" Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 4)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Actual Sart Date
+        xlCol.NumberFormat = "m/d/yyyy" 'Added by Ash, set date format. Should match Control Pannel > change date time or number format > short date
+        xlCol = rTasks(element, 5) & "#" 'Modified by Ash - added # to convert it to string because was having formatting issues with dates. also inserted a replace at the end of script to change back to date format
+        xlCol.Interior.Color = RGB(255, 255, 185) ' <-- Highlight yellow to indicate input field
+        xlCol.Borders(7).Weight = -4138 ' <-- Gen Formatting, xlEdgeLeft = 7, xlMedium = -4138
+        xlCol.Borders(10).Weight = -4138 ' <-- xlEdgeRight = 10
+        If rTasks(element, 5) <> "" Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 5)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Actual Finish Date
+        xlCol.NumberFormat = "m/d/yyyy" 'Added by Ash, set date format. Should match Control Pannel > change date time or number format > short date
+        xlCol = rTasks(element, 6) & "#" 'Modified by Ash - added # to convert it to string because was having formatting issues with dates. also inserted a replace at the end of script to change back to date format
+        xlCol.Interior.Color = RGB(255, 255, 185)
+        If rTasks(element, 6) <> "" Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 6)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Estimated Finish Date
+        xlCol.NumberFormat = "m/d/yyyy" 'Added by Ash, set date format. Should match Control Pannel > change date time or number format > short date
+        xlCol = rTasks(element, 7) & "#" 'Modified by Ash - added # to convert it to string because was having formatting issues with dates. also inserted a replace at the end of script to change back to date format
+        xlCol.Interior.Color = RGB(255, 255, 185)
+        xlCol.Borders(10).Weight = -4138
+        If rTasks(element, 7) <> "" Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 7)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Finish Date
+        xlCol.NumberFormat = "m/d/yyyy" 'Added by Ash, set date format. Should match Control Pannel > change date time or number format > short date
+        xlCol = rTasks(element, 8) & "#" 'Modified by Ash - added # to convert it to string because was having formatting issues with dates. also inserted a replace at the end of script to change back to date format
+        If rTasks(element, 8) <> "" Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 8)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        rgt 1
+        
+        'Print activity Total Work
+        xlCol = rTasks(element, 9)
+        xlCol.Interior.Color = RGB(255, 255, 185)
+        xlCol.Borders(7).Weight = -4138
+        If Not IsNull(rTasks(element, 9)) Then
+            xlCol.FormatConditions.Add 1, 4, rTasks(element, 9)
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        Else
+            xlCol.FormatConditions.Add 1, 4, "zzyyzzyyxx"
+            xlCol.FormatConditions(1).Font.Color = RGB(255, 0, 0)
+        End If
+        
+        'Set the outline level of the entire row to 2
+        Set xlCol = xlRow.EntireRow
+        xlCol.OutlineLevel = 2
+    Tcount = 0
+    Next element
+    
+Next r
+
+'Replace # with "". Added by Ash This section was added bacuse I was having trouble with the formatting of dates, it was changing month and year if daye was single digit so added a # on the end to make it a string and then this section of code make removed the # and make it look normal.  Note # should not be used anwhere else in the spreadsheet as it is a complete replace
+Set xlCol = xlRow.Offset(0, 0)
+xlCol.Replace What:="#", Replacement:=""
+
+'Cycle through each column and auto adjust the
+' column width
+dwn 1
+Set xlCol = xlRow.Offset(0, 0)
+xlCol.EntireColumn.AutoFit
+rgt 1
+xlCol.EntireColumn.AutoFit
+rgt 1
+xlCol.EntireColumn.AutoFit
+xlCol.EntireColumn.HorizontalAlignment = -4108 ' <-- xlHAlignCenter = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+rgt 1
+xlCol.EntireColumn.ColumnWidth = 10
+xlCol.EntireColumn.HorizontalAlignment = -4108
+
+Set xlRow = xlSheet.Cells(1, 1)
+xlRow = "Activity Update Input Form"
+xlRow.Font.Size = 38
+dwn 1
+
+xlRow = "Project: " & ActiveProject.BuiltinDocumentProperties(1)
+xlRow.Font.Size = 16
+dwn 2
+
+Set xlCol = xlRow.Offset(0, 0)
+rgt 1
+xlCol = "Please indicate how you expect things to be as of the end of the day on: "
+Set xlCol = xlSheet.Range("E4:F4")
+xlCol.MergeCells = True
+xlCol.Font.Size = 16
+
+
+End Sub
+Sub dwn(i As Integer)
+Set xlRow = xlRow.Offset(i, 0)
+End Sub
+
+Sub rgt(i As Integer)
+Set xlCol = xlCol.Offset(0, i)
+End Sub
+Sub CountBaselines()
+    Dim latestDate As Variant
+    Dim i As Integer
+    
+    For i = 0 To 10
+        If ActiveProject.BaselineSavedDate(i) <> "NA" Then
+            If ActiveProject.BaselineSavedDate(i) > latestDate Then
+                latestDate = ActiveProject.BaselineSavedDate(i)
+                latestBaseline = i
+            End If
+        End If
+    Next i
+End Sub
