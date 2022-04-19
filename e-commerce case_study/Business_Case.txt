@@ -1,0 +1,35 @@
+e-commerce Case Study:
+
+Vendors:
+Our company sells products supplied by third-party vendors
+These vendors need to be divided into categories of regular, gold, diamond
+All start at regular
+If the vendor meets sales targets of 30k continuously for three months, it will be promoted to gold and get a lower commission rate of 20%
+If a gold vendor meets its monthly sales targets of 50k continuously for three months it will be promoted to diamond and get a lower commission rate of 15%
+If diamond vendor meets sales target of 80k, get lower commission rate 10%
+
+An employee will become the vendor's relationship manager and will create a logon.
+The system should enforce a reset password on the first login
+The system should track any failed logins and lock the vendor if it has five invalid password attempts
+
+Products:
+Vendors can log in and list their products under subcategories
+Vendors can add, remove, discontinue any product at any time
+Anyone (including customers) can search for products on the website. Navigation via category browser. Displays a brief description of the product offering
+For each product, vendors must provide its name, sales price, stock quantity and the maximum estimated days it will take to be delivered to the customer
+The product should include a brief description and an option to offer a fixed discount as a percent of the standard sales price
+Each sales invoice should include relevant data automatically (order id, customer id, name, billing address, shipping address, order date, due date, total discount and the net value
+Sales due date will be calculated by adding the maximum number of days to be delivered for all products within an order, e.g. if two items take three days and 1 item takes five days, the system will set it as 5
+The system should send a notification email to the vendor whose product has been ordered by customers
+Vendors should update the ship date in the corresponding sales order
+Vendors, employees and customers should be able to track relevant info about the status
+Each vendor will receive the total sales amount for its products minus the total commission it pays
+Each relationship manager will receive 25% of the commission received from his/her vendors, and the Supervisor overseeing the relationship managers takes 20%
+
+Customers:
+If a customer wants to buy one or more products, they need to sign up
+A customer can add his or her relevant info (name, mailing address, phone number, email, credit card details, user_id, password, mobile, date of birth, gender)
+The system should create a logon for the customer with the current date as the joining date
+Any user signed up can add items to their shopping basket
+When the user checks out, the user must provide their billing and shipping address and credit card details
+Customers should be able to provide one feedback comment for products he/she has purchased
