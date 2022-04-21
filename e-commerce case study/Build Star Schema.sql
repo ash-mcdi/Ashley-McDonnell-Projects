@@ -55,7 +55,7 @@ CREATE TABLE [SalesOrderStore_DW].[dbo].[combined_table_with_values]
 truncate table [SalesOrderStore_DW].[dbo].[combined_table_with_values]
 
 insert into [SalesOrderStore_DW].[dbo].[combined_table_with_values] 
-SELECT sop.ProductQuantity AS ProductQuantity, so.OrderDate AS OrderDate, so.OrderTotal AS OrderTotal, so.OrderDiscountTotal AS OrderDiscountTotal, sop.ProductUnitPrice AS ProductUnitPrice, sop.ProductUnitPriceDiscount AS ProductUnitPriceDiscount,CONCAT(c.CustomerFirstName, ' ',c.CustomerLastName) AS ClientName, p.ProductName AS ProductName, v.VendorName AS VendorName, pc.ProductCategoryName AS Category, psc.ProductSubCategoryName AS Subcategory, a.StateProvince AS CustomerState, vc.VendorCategoryName AS VendorCategory, DATEDIFF(dd,so.OrderDate,so.OrderDeliveryDate)+1-DATEDIFF(ww,so.OrderDate,so.OrderDeliveryDate)*2 AS WeekdaysToDeliver, CustomerFeedbackRating AS CustomerFeedbackRating, CONCAT(e.EmployeeFirstName,' ',e.EmployeeLastName) AS EmployeeName
+SELECT sop.ProductQuantity AS ProductQuantity, so.OrderDate AS OrderDate, so.OrderTotal AS OrderTotal, so.OrderDiscountTotal AS OrderDiscountTotal, sop.ProductUnitPrice AS ProductUnitPrice, sop.ProductUnitPriceDiscount AS ProductUnitPriceDiscount,CONCAT(c.CustomerFirstName, ' ',c.CustomerLastName) AS ClientName, p.ProductName AS ProductName, v.VendorName AS VendorName, pc.ProductCategoryName AS Category, psc.ProductSubCategoryName AS Subcategory, a.StateProvince AS CustomerState, vc.VendorCategoryName AS VendorCategory, DATEDIFF(dd,so.OrderDate,so.OrderDeliveryDate)+1-DATEDIFF(ww,so.OrderDate,so.OrderDeliveryDate)*2 AS WeekdaysToDeliver, ISNULL(CustomerFeedbackRating, 0) AS CustomerFeedbackRating, CONCAT(e.EmployeeFirstName,' ',e.EmployeeLastName) AS EmployeeName
 FROM [SalesOrderStore].[dbo].[SalesOrderProducts] sop 
 LEFT OUTER JOIN [SalesOrderStore].[dbo].[Products] AS p ON sop.ProductID = p.ProductID
 LEFT OUTER JOIN [SalesOrderStore].[dbo].[SalesOrders] AS so ON sop.SalesOrderID = so.SalesOrderID
@@ -122,12 +122,12 @@ drop table if exists [SalesOrderStore_DW].[dbo].[DimFeedback]
 CREATE TABLE [SalesOrderStore_DW].[dbo].[DimFeedback]  
 	( 
 		PKeyFeedback INT IDENTITY(1,1) NOT NULL PRIMARY KEY, 
-		FeedbackRating INT NULL,
+		FeedbackRating INT NULL DEFAULT 0,
 	);
 
 TRUNCATE TABLE [SalesOrderStore_DW].[dbo].[DimFeedback]     
 INSERT INTO [SalesOrderStore_DW].[dbo].[DimFeedback]     
-SELECT DISTINCT CustomerFeedbackRating
+SELECT DISTINCT ISNULL(CustomerFeedbackRating, 0)
 FROM [SalesOrderStore_DW].[dbo].[combined_table_with_values]
 
 drop table if exists [SalesOrderStore_DW].[dbo].[FactSalesTransactions]
@@ -137,6 +137,7 @@ CREATE TABLE [SalesOrderStore_DW].[dbo].[FactSalesTransactions]
 		PKeyProduct INT NULL,
 		PKeyCustomer INT NULL,
 		PKeyEmployee INT NULL,
+		PKeyFeedback INT NULL,
 		OrderDate DATETIME NULL,
 		OrderDiscountTotal DECIMAL(18,4) NULL,
 		ProductUnitPrice DECIMAL(18,4) NULL,
@@ -145,9 +146,10 @@ CREATE TABLE [SalesOrderStore_DW].[dbo].[FactSalesTransactions]
 
 TRUNCATE TABLE [SalesOrderStore_DW].[dbo].[FactSalesTransactions]     
 INSERT INTO [SalesOrderStore_DW].[dbo].[FactSalesTransactions]     
-SELECT PkeyVendor, PKeyProduct, PKeyCustomer, PKeyEmployee, OrderDate, OrderDiscountTotal, ProductUnitPrice, WeekdaysToDeliver
-FROM [SalesOrderStore_DW].[dbo].[combined_table_with_values] cm, [SalesOrderStore_DW].[dbo].[DimVendors] v, [SalesOrderStore_DW].[dbo].[DimProducts] p, [SalesOrderStore_DW].[dbo].[DimCustomers] c, [SalesOrderStore_DW].[dbo].[DimEmployees] e
+SELECT PkeyVendor, PKeyProduct, PKeyCustomer, PKeyEmployee, PKeyFeedback, OrderDate, OrderDiscountTotal, ProductUnitPrice, WeekdaysToDeliver
+FROM [SalesOrderStore_DW].[dbo].[combined_table_with_values] cm, [SalesOrderStore_DW].[dbo].[DimVendors] v, [SalesOrderStore_DW].[dbo].[DimProducts] p, [SalesOrderStore_DW].[dbo].[DimCustomers] c, [SalesOrderStore_DW].[dbo].[DimEmployees] e, [SalesOrderStore_DW].[dbo].[DimFeedback] f
 WHERE cm.VendorName = v.VendorName AND
 cm.ProductName = p.ProductName AND
 cm.ClientName = c.ClientName AND
-cm.EmployeeName = e.EmployeeName
+cm.EmployeeName = e.EmployeeName AND
+cm.CustomerFeedbackRating = f.FeedbackRating
