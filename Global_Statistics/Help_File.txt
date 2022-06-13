@@ -1,0 +1,1 @@
+This dashboard was created to view key global statistics such as population, land area.  It has a setting page that allows you to apply the filters and a slicer to switch between different continents on the main report page
