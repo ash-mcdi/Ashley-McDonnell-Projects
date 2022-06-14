@@ -22,7 +22,7 @@ You can access to it **[HERE](https://github.com/ash-mcdi/Ashley-McDonnell-Proje
 * This project explores covid-19 statistics
 * Statistics can be aggregated for the entire world, continent or country
 
-You can access to it **[HERE](https://roberto121c.github.io/Sales_Management/](https://github.com/ash-mcdi/Ashley-McDonnell-Projects/tree/main/Covid-19)**
+You can access to it **[HERE](https://github.com/ash-mcdi/Ashley-McDonnell-Projects/tree/main/Covid-19)**
 
 ![](https://github.com/ash-mcdi/Ashley-McDonnell-Projects/blob/main/Covid-19/Images/Covid-19_Statistics.PNG)
 ![](https://github.com/ash-mcdi/Ashley-McDonnell-Projects/blob/main/Covid-19/Images/Covid-19%20Statistics-Country_selected.PNG)
